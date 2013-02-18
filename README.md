@@ -11,6 +11,10 @@ bot.
 
 <pre><code>python song-bot.py</code></pre>
 
+##Contributing
+
+No code is perfect, so feel free to send me a pull request or create a git issue :)
+
 ##License
 
 http://www.tldrlegal.com/l/WTFPL
