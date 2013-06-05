@@ -25,16 +25,28 @@ print 'Checking...'
 response = requests.get(movie_list_url)
 parser = BeautifulSoup(response.content)
 links = parser.findAll('a')
+possible_matches = []
 for link in links:
     movie = link.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
     movie_short_name = movie.split('-')[0].strip()
-    if movie_name.lower() == movie_short_name.lower():
+    if movie_name.lower() in movie_short_name.lower():
+        possible_matches.append(link)
         found = True
-        print 'Movie found.', movie
-        movie = link
-        break
 
 if found:
+    print 'Movie found'
+
+    #Let user select a movie in case of multiple matches
+    if len(possible_matches)>1:
+        print 'We have found multiple matches...'
+        for num, single_match in enumerate(possible_matches):
+            print num+1, single_match.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
+        choice = int(raw_input("Enter which movie you want to proceed with: ")) - 1
+        movie = possible_matches[choice]
+    else:
+        movie = possible_matches[0]
+
+    #Getting songs page for selected movie
     print 'Querying movie page for songs...'
     link_attrs = movie.get('href')
     songs_url = ''.join([base_url, link_attrs])
@@ -44,16 +56,20 @@ if found:
     for link in songs[:]:
         if 'songid' not in unicode(link.get('href')):
             songs.remove(link)
+
+    #Showing song list and asking user to select a song to download
     print 'Following songs found...'
     for num, song in enumerate(songs):
         print num+1, song.text
     track_no = int(raw_input("Enter the song number you want to download: ")) - 1
+
+    #writing song to file
+    print "Downloading {0}.mp3 Please wait...".format(songs[track_no].text)
     try:
         file = open(songs[track_no].text+'.mp3', 'wb')
     except Exception, e:
         print "Error occured:", e
         sys.exit(1)
-    print "Downloading {0}.mp3 Please wait...".format(songs[track_no].text)
     res = requests.get(songs[track_no].get('href'))
     from urllib import quote
     actual_url = quote(res.url, safe="%/:.")
