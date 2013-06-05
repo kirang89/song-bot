@@ -13,67 +13,56 @@ print "=" * 50
 print "Song Bot"
 print "=" * 50
 movie_name = raw_input("Movie Name: ")
-base_url = 'http://www.songspk.info/indian_movie/'
+base_url = 'http://www.songspk.name/'
 found = False
 
 if not movie_name:
     print "Movie name cannot be empty"
     sys.exit(1)
 
-movie_list_url = ''.join([base_url, movie_name[0].upper(), "_List.html"])
+movie_list_url = ''.join([base_url, movie_name[0], "_list.html"])
+print 'Checking...'
 response = requests.get(movie_list_url)
 parser = BeautifulSoup(response.content)
-table = parser.findAll('table')[8]
-rows = table.findAll('tr')
-for row in rows:
-    movie = row.findAll('td', {'width': '315'})
-    name1 = movie[0].text.split('-')[0].strip()
-    name2 = movie[1].text.split('-')[0].strip()
-    if movie_name.lower() == name1.lower():
+links = parser.findAll('a')
+for link in links:
+    movie = link.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
+    movie_short_name = movie.split('-')[0].strip()
+    if movie_name.lower() == movie_short_name.lower():
         found = True
-        movie = movie[0]
-        break
-    elif movie_name.lower() == name2.lower():
-        found = True
-        movie = movie[1]
+        print 'Movie found.', movie
+        movie = link
         break
 
 if found:
-    link_attrs = movie.find('a').get('href')
+    print 'Querying movie page for songs...'
+    link_attrs = movie.get('href')
     songs_url = ''.join([base_url, link_attrs])
     res = requests.get(songs_url)
     sparser = BeautifulSoup(res.content)
-    table = sparser.findAll('table')[8]
-    rows = table.findAll('tr')
-    song_names = []
-    song_urls = []
-    for row in rows:
-        songs = row.find('td', {'width': '440'})
-        if songs:
-            song_names.append(songs.text)
-            song_urls.append(songs.find('a').get('href'))
-    print "=" * 50
-    for i in range(0, len(song_names)):
-        print '{0}. {1}'.format(i, song_names[i])
-    print "=" * 50
-    track_no = raw_input("Select the song you want to download: ")
-    path = raw_input("Enter download destination(full path): ")
+    songs = sparser.findAll('a')
+    for link in songs[:]:
+        if 'songid' not in unicode(link.get('href')):
+            songs.remove(link)
+    print 'Following songs found...'
+    for num, song in enumerate(songs):
+        print num+1, song.text
+    track_no = int(raw_input("Enter the song number you want to download: ")) - 1
     try:
-        file = open(path + "/" + song_names[int(track_no)] + ".mp3", 'w')
+        file = open(songs[track_no].text+'.mp3', 'wb')
     except Exception, e:
-        print "Enter a valid destination"
+        print "Error occured:", e
         sys.exit(1)
-    print "Downloading {0}.mp3...Please wait".format(song_names[int(track_no)])
-    res = requests.get(song_urls[int(track_no)])
-    if res.ok:
-        try:
-            file.write(res.content)
-            file.close()
-            print "Download Completed."
-        except Exception, e:
-            file.close()
-            print "Download failed"
-            sys.exit(1)
+    print "Downloading {0}.mp3 Please wait...".format(songs[track_no].text)
+    res = requests.get(songs[track_no].get('href'))
+    from urllib import quote
+    actual_url = quote(res.url, safe="%/:.")
+    res = requests.get(actual_url, stream=True)
+    for block in res.iter_content(1024):
+        if not block:
+            break
+        file.write(block)
+    print 'Download complete'
 
 else:
     print "Movie not found"
