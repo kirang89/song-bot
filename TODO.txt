@@ -1,5 +1,4 @@
 TO DO
 
-- Fix problems with scraping data for certain new movies 
-- Refactor
+- Possibly add English and Tamil songs as well
 

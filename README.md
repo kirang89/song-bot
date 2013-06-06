@@ -7,9 +7,13 @@ Song Bot helps you to download bollywood songs right from your terminal.
 It was becoming a big pain to navigate around for downloading a single song, and hence created this
 bot.
 
+##Installing
+
+```pip install -r requirements.txt```
+
 ##Running 
 
-<pre><code>python song-bot.py</code></pre>
+```python song-bot.py```
 
 ##Contributing
 
