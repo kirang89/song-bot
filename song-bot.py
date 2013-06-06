@@ -11,7 +11,7 @@ from BeautifulSoup import BeautifulSoup
 
 def movie_finder(base_url, movie_name):
     found = False
-    movie_list_url = ''.join([base_url, movie_name[0], "_list.html"])
+    movie_list_url = ''.join([base_url, movie_name[0].lower(), "_list.html"])
     print 'Checking...'
     response = requests.get(movie_list_url)
     parser = BeautifulSoup(response.content)
