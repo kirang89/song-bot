@@ -67,7 +67,7 @@ def main():
         print "Movie name cannot be empty"
         sys.exit(1)
 
-    found, possible_matches = movie_finder(base_url, movie_name)
+    found, possible_matches = movie_finder(base_url, movie_name.lower())
     if found:
         print 'Movie found'
         #Let user select a movie in case of multiple matches
