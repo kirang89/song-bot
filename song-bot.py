@@ -49,7 +49,7 @@ def download_song(song):
         sys.exit(1)
     res = requests.get(song.get('href'))
     size = float(res.headers['content-length'])
-    mbSize = 1024*1024    #used for conversion to Mb
+    mbSize = 1024 * 1024    #used for conversion to Mb
     TotalSize = (size)/mbSize
 
     from urllib import quote
@@ -66,11 +66,10 @@ def download_song(song):
         if not block:
             break
         file.write(block)
-        count+=1024
+        count += 1024
         progress.update(count/mbSize)
     file.close()
     progress.finish()
-    print
     print 'Downloaded {0}'.format(song.text)
 
 
@@ -98,7 +97,7 @@ def main():
             movie = possible_matches[choice]
         else:
             movie = possible_matches[0]
-            #Getting songs page for selected movie
+        #Getting songs page for selected movie
         songs = songs_finder(base_url, movie)
         #Showing song list and asking user to select a song to download
         print 'Following songs found...'
