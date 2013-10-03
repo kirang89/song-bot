@@ -7,6 +7,7 @@
 import requests
 import sys
 from BeautifulSoup import BeautifulSoup
+from progressbar import *
 
 
 def movie_finder(base_url, movie_name):
@@ -25,6 +26,7 @@ def movie_finder(base_url, movie_name):
             found = True
     return found, possible_matches
 
+
 def songs_finder(base_url, movie):
     print 'Querying movie page for songs...'
     link_attrs = movie.get('href')
@@ -37,23 +39,39 @@ def songs_finder(base_url, movie):
             songs.remove(link)
     return songs
 
+
 def download_song(song):
     print "Downloading {0}.mp3 Please wait...".format(song.text)
     try:
-        file = open(song.text+'.mp3', 'wb')
+        file = open(song.text + '.mp3', 'wb')
     except Exception, e:
         print "Error occured:", e
         sys.exit(1)
     res = requests.get(song.get('href'))
+    size = float(res.headers['content-length'])
+    mbSize = 1024 * 1024    #used for conversion to Mb
+    TotalSize = (size)/mbSize
+
     from urllib import quote
+
     actual_url = quote(res.url, safe="%/:.")
     res = requests.get(actual_url, stream=True)
+
+    widgets = ['Test: ', Percentage(), ' ', Bar(">"), ' ', ETA(), ' ', FileTransferSpeed()]
+    progress = ProgressBar(widgets=widgets,maxval=TotalSize)
+    progress.start()
+
+    count = 0
     for block in res.iter_content(1024):
         if not block:
             break
         file.write(block)
+        count += 1024
+        progress.update(count/mbSize)
     file.close()
+    progress.finish()
     print 'Downloaded {0}'.format(song.text)
+
 
 def main():
     print "=" * 50
@@ -71,10 +89,10 @@ def main():
     if found:
         print 'Movie found'
         #Let user select a movie in case of multiple matches
-        if len(possible_matches)>1:
+        if len(possible_matches) > 1:
             print 'We have found multiple matches...'
             for num, single_match in enumerate(possible_matches):
-                print num+1, single_match.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
+                print num + 1, single_match.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
             choice = int(raw_input("Enter which movie you want to proceed with: ")) - 1
             movie = possible_matches[choice]
         else:
@@ -84,14 +102,14 @@ def main():
         #Showing song list and asking user to select a song to download
         print 'Following songs found...'
         for num, song in enumerate(songs):
-            print num+1, song.text
+            print num + 1, song.text
         track_no = int(raw_input("Enter the song number you want to download(0 to download all): "))
         if track_no == 0:
             for song in songs:
-                #call downloader fucntion
+                #call downloader function
                 download_song(song)
         else:
-            download_song(songs[track_no-1])
+            download_song(songs[track_no - 1])
         print 'Download complete'
     else:
         print "Movie not found"
