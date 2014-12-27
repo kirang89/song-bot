@@ -93,8 +93,12 @@ def main():
             print 'We have found multiple matches...'
             for num, single_match in enumerate(possible_matches):
                 print num + 1, single_match.text.replace("\n", "").replace("\t", "").replace("&nbsp;", "")
-            choice = int(raw_input("Enter which movie you want to proceed with: ")) - 1
-            movie = possible_matches[choice]
+            try:
+                choice = int(raw_input("Enter which movie you want to proceed with: ")) - 1
+                movie = possible_matches[choice]
+            except (ValueError, IndexError):
+                print 'Invalid input. Exiting...'
+                sys.exit(1)
         else:
             movie = possible_matches[0]
         #Getting songs page for selected movie
@@ -103,14 +107,18 @@ def main():
         print 'Following songs found...'
         for num, song in enumerate(songs):
             print num + 1, song.text
-        track_no = int(raw_input("Enter the song number you want to download(0 to download all): "))
-        if track_no == 0:
-            for song in songs:
-                #call downloader function
-                download_song(song)
-        else:
-            download_song(songs[track_no - 1])
-        print 'Download complete'
+        try:
+            track_no = int(raw_input("Enter the song number you want to download(0 to download all): "))
+            if track_no == 0:
+                for song in songs:
+                    #call downloader function
+                    download_song(song)
+            else:
+                download_song(songs[track_no - 1])
+            print 'Download complete'
+        except (ValueError, IndexError):
+            print 'Invalid input. Exiting...'
+            sys.exit(1)
     else:
         print "Movie not found"
 
