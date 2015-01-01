@@ -6,6 +6,7 @@
 #
 import requests
 import sys
+import os
 from BeautifulSoup import BeautifulSoup
 from progressbar import *
 
@@ -40,10 +41,11 @@ def songs_finder(base_url, movie):
     return songs
 
 
-def download_song(song):
+def download_song(song, dir_path):
     print "Downloading {0}.mp3 Please wait...".format(song.text)
     try:
-        file = open(song.text + '.mp3', 'wb')
+        file_path = os.path.join(dir_path, (song.text + '.mp3'))
+        file = open(file_path, 'wb')
     except Exception, e:
         print "Error occured:", e
         sys.exit(1)
@@ -107,15 +109,27 @@ def main():
         print 'Following songs found...'
         for num, song in enumerate(songs):
             print num + 1, song.text
+
         try:
             track_no = int(raw_input("Enter the song number you want to download(0 to download all): "))
+
+            resp = raw_input("Do you want to create folder '%s'?(y)" %movie.text) 
+            if resp.strip().lower() in ('y', 'yes'):
+                dir_path  = os.path.join(os.getcwd(), movie.text) 
+                if os.path.isdir(dir_path):
+                    print "Directory '%s' already exist. Skipping..."%(dir_path)
+                else:
+                    os.mkdir(dir_path)
+            else:
+                dir_path = os.getcwd()
             if track_no == 0:
                 for song in songs:
                     #call downloader function
-                    download_song(song)
+                    download_song(song, dir_path)
             else:
-                download_song(songs[track_no - 1])
+                download_song(songs[track_no - 1], dir_path)
             print 'Download complete'
+
         except (ValueError, IndexError):
             print 'Invalid input. Exiting...'
             sys.exit(1)
