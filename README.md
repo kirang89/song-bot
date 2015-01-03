@@ -9,11 +9,17 @@ bot.
 
 ##Installing
 
-```pip install -r requirements.txt```
+```
+git clone git@github.com:kirang89/song-bot.git
+cd song-bot
+python setup.py install
+```
 
 ##Running 
 
-```python song-bot.py```
+```
+song-bot.py
+```
 
 ##Contributing
 
